@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -13,7 +14,9 @@ import java.util.UUID;
 @Builder
 public class PollDto {
     private UUID id;
+    private UUID userId;
     private String question;
-    private String lastName;
-    private String email;
+    private boolean isPublic;
+    private LocalDateTime closesAt;
+    private LocalDateTime createdAt;
 }

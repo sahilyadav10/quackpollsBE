@@ -1,14 +1,13 @@
 package com.sahilten.quackpolls.domain.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.util.Objects;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -19,10 +18,22 @@ public class OptionEntity {
     @GeneratedValue
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String text;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "poll_id", nullable = false)
     private PollEntity poll;
+    
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        OptionEntity that = (OptionEntity) o;
+        return Objects.equals(id, that.id) && Objects.equals(text, that.text) && Objects.equals(poll, that.poll);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, text, poll);
+    }
 }

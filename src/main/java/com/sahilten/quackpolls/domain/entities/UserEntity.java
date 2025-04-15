@@ -2,15 +2,15 @@ package com.sahilten.quackpolls.domain.entities;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
-@Data // Generates getters, setters, equals, hashCode, toString
+@Getter
+@Setter // Generates getters, setters
 @AllArgsConstructor // Generates a constructor with all fields
 @NoArgsConstructor // Generates a no-argument constructor
 @Builder // Enables builder pattern for this class
@@ -34,9 +34,29 @@ public class UserEntity {
     @Column(nullable = false) // Cannot be null
     private String password;
 
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     // One user can have many polls
     // 'user' in PollEntity owns the relationship
     // Cascade all operations and remove orphans automatically,
     private List<PollEntity> polls;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        UserEntity that = (UserEntity) o;
+        return Objects.equals(id, that.id) && Objects.equals(firstName, that.firstName) && Objects.equals(lastName, that.lastName) && Objects.equals(email, that.email) && Objects.equals(password, that.password) && Objects.equals(polls, that.polls);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, firstName, lastName, email, password, polls);
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }
