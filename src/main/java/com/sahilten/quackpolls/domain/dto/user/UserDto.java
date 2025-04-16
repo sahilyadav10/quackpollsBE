@@ -1,4 +1,4 @@
-package com.sahilten.quackpolls.domain.dto;
+package com.sahilten.quackpolls.domain.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
