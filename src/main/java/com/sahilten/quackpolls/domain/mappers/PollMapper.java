@@ -1,7 +1,7 @@
 package com.sahilten.quackpolls.domain.mappers;
 
-import com.sahilten.quackpolls.domain.dto.CreatePollRequest;
-import com.sahilten.quackpolls.domain.dto.PollDto;
+import com.sahilten.quackpolls.domain.dto.poll.CreatePollRequest;
+import com.sahilten.quackpolls.domain.dto.poll.PollDto;
 import com.sahilten.quackpolls.domain.entities.PollEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
