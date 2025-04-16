@@ -1,16 +1,18 @@
 package com.sahilten.quackpolls.controllers;
 
-import com.sahilten.quackpolls.domain.dto.CreatePollRequest;
-import com.sahilten.quackpolls.domain.dto.PollDto;
+import com.sahilten.quackpolls.domain.dto.poll.CreatePollRequest;
+import com.sahilten.quackpolls.domain.dto.poll.PollDto;
 import com.sahilten.quackpolls.domain.entities.PollEntity;
 import com.sahilten.quackpolls.domain.mappers.PollMapper;
-import com.sahilten.quackpolls.repositories.PollRepository;
 import com.sahilten.quackpolls.services.PollService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Slf4j
@@ -36,5 +38,3 @@ public class PollController {
     }
 
 }
-
-
