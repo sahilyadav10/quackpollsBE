@@ -32,7 +32,7 @@ public class PollEntity {
     private LocalDateTime closesAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "user_id", nullable = true)
@@ -45,7 +45,9 @@ public class PollEntity {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         PollEntity that = (PollEntity) o;
-        return isPublic == that.isPublic && Objects.equals(id, that.id) && Objects.equals(question, that.question) && Objects.equals(closesAt, that.closesAt) && Objects.equals(createdAt, that.createdAt) && Objects.equals(user, that.user) && Objects.equals(options, that.options);
+        return isPublic == that.isPublic && Objects.equals(id, that.id) && Objects.equals(question,
+                that.question) && Objects.equals(closesAt, that.closesAt) && Objects.equals(createdAt,
+                that.createdAt) && Objects.equals(user, that.user) && Objects.equals(options, that.options);
     }
 
     @Override
@@ -53,6 +55,7 @@ public class PollEntity {
         return Objects.hash(id, question, isPublic, closesAt, createdAt, user, options);
     }
 
+    //   The @PrePersist method runs only when Hibernate executes save/persist.
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

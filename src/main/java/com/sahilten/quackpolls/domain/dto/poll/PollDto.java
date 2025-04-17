@@ -1,5 +1,6 @@
 package com.sahilten.quackpolls.domain.dto.poll;
 
+import com.sahilten.quackpolls.domain.dto.user.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,4 +20,5 @@ public class PollDto {
     private boolean isPublic;
     private LocalDateTime closesAt;
     private LocalDateTime createdAt;
+    private UserDto creator;
 }
