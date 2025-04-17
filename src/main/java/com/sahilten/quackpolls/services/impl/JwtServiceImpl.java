@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
@@ -17,6 +18,8 @@ public class JwtServiceImpl implements JwtService {
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
+    @Value("${jwt.secret}")
+    private String secret;
 
     @Override
     public String generateToken(UserDetails userDetails) {
@@ -37,7 +40,6 @@ public class JwtServiceImpl implements JwtService {
         return extractClaims(token).getSubject();  // Extract and return the "sub" claim (here the email)
     }
 
-
     @Override
     public boolean isTokenValid(String token, UserDetails userDetails) {
         // Extract the username from the token and check if it matches the provided user details
@@ -45,7 +47,6 @@ public class JwtServiceImpl implements JwtService {
         // If the username in the token matches and the token isn't expired, it's valid
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
-
 
     private boolean isTokenExpired(String token) {
         // Get the expiration date from the "exp" claim and compare it with the current time
@@ -60,9 +61,8 @@ public class JwtServiceImpl implements JwtService {
                 .getBody();  // Return the claims (data) from the token
     }
 
-
     private Key getSigningKey() {
-        // Generate a secure key for signing the token (HS256)
-        return Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }
