@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -41,6 +43,20 @@ public class PollController {
         return ResponseEntity.notFound().build();
     }
 
+    @GetMapping
+    public ResponseEntity<List<PollDto>> getAllPolls(@AuthenticationPrincipal QuackpollUserDetails userDetails) {
+        UserEntity userEntity = userDetails.getUserEntity();
+
+        List<PollEntity> pollEntities = pollService.getAllForUser(userEntity.getId());
+
+        List<PollDto> allPolls = new ArrayList<>();
+        for (PollEntity entity : pollEntities) {
+            allPolls.add(pollMapper.toDto(entity));
+        }
+
+        return ResponseEntity.ok(allPolls);
+    }
+
     @PostMapping
     public ResponseEntity<PollDto> createPoll(
             @AuthenticationPrincipal QuackpollUserDetails userDetails,
@@ -61,5 +77,17 @@ public class PollController {
         PollDto response = pollMapper.toDto(savedPoll);
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> deletePoll(@PathVariable("id") UUID pollId) {
+        Optional<PollEntity> pollEntity = pollService.get(pollId);
+
+        if (pollEntity.isPresent()) {
+            pollService.delete(pollId);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
 
 }

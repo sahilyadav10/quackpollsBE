@@ -37,8 +37,8 @@ public class PollServiceImpl implements PollService {
     }
 
     @Override
-    public List<PollEntity> getAll() {
-        return pollRepository.findAll();
+    public List<PollEntity> getAllForUser(UUID userId) { // test‑friendly
+        return pollRepository.findAllByUser_Id(userId);
     }
 
 }

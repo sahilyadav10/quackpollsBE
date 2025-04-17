@@ -15,5 +15,5 @@ public interface PollService {
 
     void delete(UUID pollId);
 
-    List<PollEntity> getAll();
+    List<PollEntity> getAllForUser(UUID userId);
 }
