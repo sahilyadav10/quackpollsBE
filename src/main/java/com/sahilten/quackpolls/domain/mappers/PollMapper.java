@@ -39,7 +39,6 @@ public interface PollMapper {
     // Nested entity field user.id is flattened to userId in DTO
     PollDto toDto(PollEntity entity);
 
-
     /**
      * Maps UserEntity to CreatorUserDto.
      * This method is used implicitly by MapStruct when mapping PollEntity → PollDto,
@@ -51,6 +50,7 @@ public interface PollMapper {
 
     List<OptionEntity> toOptionsEntity(List<OptionDto> OptionDto);
 
-    List<OptionDto> toOptionsDto(List<OptionEntity> OptionEntity);
+    @Mapping(target = "voteCount", expression = "java(option.getVotes() != null ? option.getVotes().size() : 0)")
+    OptionDto toOptionsWithVotesDto(OptionEntity option);
 
 }
