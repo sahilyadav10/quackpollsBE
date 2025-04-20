@@ -1,5 +1,6 @@
 package com.sahilten.quackpolls.services.impl;
 
+import com.sahilten.quackpolls.domain.entities.OptionEntity;
 import com.sahilten.quackpolls.domain.entities.PollEntity;
 import com.sahilten.quackpolls.repositories.PollRepository;
 import com.sahilten.quackpolls.services.PollService;
@@ -18,6 +19,9 @@ public class PollServiceImpl implements PollService {
 
     @Override
     public PollEntity save(PollEntity pollEntity) {
+        for (OptionEntity optionEntity : pollEntity.getOptions()) {
+            optionEntity.setPoll(pollEntity);
+        }
         return pollRepository.save(pollEntity);
     }
 
@@ -28,6 +32,9 @@ public class PollServiceImpl implements PollService {
 
     @Override
     public PollEntity update(PollEntity pollEntity) {
+        for (OptionEntity optionEntity : pollEntity.getOptions()) {
+            optionEntity.setPoll(pollEntity);
+        }
         return pollRepository.save(pollEntity);
     }
 

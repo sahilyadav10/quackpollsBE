@@ -1,13 +1,17 @@
 package com.sahilten.quackpolls.domain.mappers;
 
+import com.sahilten.quackpolls.domain.dto.option.OptionDto;
 import com.sahilten.quackpolls.domain.dto.poll.CreatePollRequest;
 import com.sahilten.quackpolls.domain.dto.poll.PollDto;
 import com.sahilten.quackpolls.domain.dto.user.UserDto;
+import com.sahilten.quackpolls.domain.entities.OptionEntity;
 import com.sahilten.quackpolls.domain.entities.PollEntity;
 import com.sahilten.quackpolls.domain.entities.UserEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
+
+import java.util.List;
 
 
 /**
@@ -43,4 +47,7 @@ public interface PollMapper {
      * No manual call needed — MapStruct wires it automatically.
      */
     UserDto toCreatorUserDto(UserEntity user);
+
+
+    List<OptionEntity> toOptionsEntity(List<OptionDto> OptionDto);
 }
