@@ -9,5 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface VoteRepository extends JpaRepository<VoteEntity, UUID> {
-
+    
 }

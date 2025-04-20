@@ -18,4 +18,5 @@ public class VoteDto {
     private UUID optionId;
     private UUID userId; // optional – null for anonymous votes
     private LocalDateTime votedAt;
+    private String voterIdentifier;
 }

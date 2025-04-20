@@ -29,17 +29,22 @@ public class VoteEntity {
     private OptionEntity optionEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private UserEntity userEntity;
 
     @Column(name = "voted_at", nullable = false)
     private LocalDateTime votedAt = LocalDateTime.now();
 
+    @Column(name = "voter_identifier", nullable = false)
+    private String voterIdentifier;
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         VoteEntity that = (VoteEntity) o;
-        return Objects.equals(id, that.id) && Objects.equals(pollEntity, that.pollEntity) && Objects.equals(optionEntity, that.optionEntity) && Objects.equals(userEntity, that.userEntity) && Objects.equals(votedAt, that.votedAt);
+        return Objects.equals(id, that.id) && Objects.equals(pollEntity, that.pollEntity) && Objects.equals(
+                optionEntity, that.optionEntity) && Objects.equals(userEntity, that.userEntity) && Objects.equals(
+                votedAt, that.votedAt);
     }
 
     @Override
@@ -51,7 +56,7 @@ public class VoteEntity {
     protected void onCreate() {
         this.votedAt = LocalDateTime.now();
     }
-    
+
     //    @PreUpdate
     //    protected void onUpdate() {
     //        this.updatedAt = LocalDateTime.now();
