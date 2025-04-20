@@ -1,15 +1,15 @@
 package com.sahilten.quackpolls.domain.dto.poll;
 
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import com.sahilten.quackpolls.domain.dto.option.OptionDto;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -20,8 +20,8 @@ public class CreatePollRequest {
     @NotBlank(message = "Question is required")
     @Size(min = 2, max = 100, message = "Question must be between {min} and {max} characters")
     @Pattern(
-            regexp = "^[a-zA-Z0-9\\s-]+$",
-            message = "Question can only contain letters, numbers, spaces, and common punctuation"
+            regexp = "^[a-zA-Z0-9\\s-?]+$",
+            message = "Question can only contain letters, numbers, spaces, dashes and question marks"
     )
     private String question;
 
@@ -29,4 +29,11 @@ public class CreatePollRequest {
 
     @Future(message = "Close time must be in the future")
     private LocalDateTime closesAt;
+
+
+    @Valid // run validation on each OptionDto
+    @NotEmpty(message = "Add at least two options")
+    @Size(min = 2, max = 10,
+          message = "Provide {min}–{max} options")
+    private List<OptionDto> options;
 }
