@@ -50,4 +50,7 @@ public interface PollMapper {
 
 
     List<OptionEntity> toOptionsEntity(List<OptionDto> OptionDto);
+
+    List<OptionDto> toOptionsDto(List<OptionEntity> OptionEntity);
+
 }
