@@ -1,14 +1,17 @@
 package com.sahilten.quackpolls.domain.mappers;
 
 import com.sahilten.quackpolls.domain.dto.option.OptionDto;
+import com.sahilten.quackpolls.domain.dto.option.OptionsWithVotesDto;
 import com.sahilten.quackpolls.domain.dto.poll.CreatePollRequest;
 import com.sahilten.quackpolls.domain.dto.poll.PollDto;
+import com.sahilten.quackpolls.domain.dto.poll.PollWithVotesDto;
 import com.sahilten.quackpolls.domain.dto.user.UserDto;
 import com.sahilten.quackpolls.domain.entities.OptionEntity;
 import com.sahilten.quackpolls.domain.entities.PollEntity;
 import com.sahilten.quackpolls.domain.entities.UserEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
@@ -36,6 +39,7 @@ public interface PollMapper {
      */
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "creator", source = "user")
+    @Mapping(target = "options", source = "options", qualifiedByName = "toOptionsWithoutVotesDto")
     // Nested entity field user.id is flattened to userId in DTO
     PollDto toDto(PollEntity entity);
 
@@ -48,9 +52,26 @@ public interface PollMapper {
     UserDto toCreatorUserDto(UserEntity user);
 
 
+    /**
+     * Converts a list of OptionDto into a list of OptionEntity.
+     * Used by MapStruct in the generated mapper to handle collection mappings.
+     */
     List<OptionEntity> toOptionsEntity(List<OptionDto> OptionDto);
 
+
+    @Named("toOptionsWithoutVotesDto")
+    OptionDto toOptionsWithoutVotesDto(OptionEntity option);
+
+
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "creator", source = "user")
+    @Mapping(target = "options", source = "options", qualifiedByName = "toOptionsWithVotesDto")
+        // Nested entity field user.id is flattened to userId in DTO
+    PollWithVotesDto toWithVotesDto(PollEntity entity);
+
     @Mapping(target = "voteCount", expression = "java(option.getVotes() != null ? option.getVotes().size() : 0)")
-    OptionDto toOptionsWithVotesDto(OptionEntity option);
+    @Named("toOptionsWithVotesDto")
+    OptionsWithVotesDto toOptionsWithVotesDto(OptionEntity option);
+
 
 }

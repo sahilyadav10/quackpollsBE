@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sahilten.quackpolls.domain.dto.poll.CreatePollRequest;
 import com.sahilten.quackpolls.domain.dto.poll.PollDto;
+import com.sahilten.quackpolls.domain.dto.poll.PollWithVotesDto;
 import com.sahilten.quackpolls.domain.entities.PollEntity;
 import com.sahilten.quackpolls.domain.entities.UserEntity;
 import com.sahilten.quackpolls.domain.mappers.PollMapper;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,15 +34,27 @@ public class PollController {
     private final ObjectMapper objectMapper;
 
     @GetMapping("/{id}")
-    public ResponseEntity<PollDto> getPoll(@PathVariable("id") UUID pollId) {
-        Optional<PollEntity> pollEntity = pollService.get(pollId);
+    public ResponseEntity<?> getPoll(@AuthenticationPrincipal QuackpollUserDetails userDetails, @PathVariable(
+            "id") UUID pollId) {
+        UserEntity userEntity = userDetails.getUserEntity();
+        UUID currentUserId = userEntity.getId();
 
-        if (pollEntity.isPresent()) {
-            PollDto response = pollMapper.toDto(pollEntity.get());
+        PollEntity pollEntity = pollService.get(pollId)
+                .orElseThrow(() -> new RuntimeException("Poll not found"));
+
+        boolean isCreator = pollEntity.getUser().getId().equals(currentUserId);
+        boolean isClosed = Optional.ofNullable(pollEntity.getClosesAt())
+                .map(closesAt -> closesAt.isBefore(LocalDateTime.now()))
+                .orElse(false);
+
+        if (isCreator || isClosed) {
+            PollWithVotesDto response = pollMapper.toWithVotesDto(pollEntity);
+            return ResponseEntity.ok(response);
+        } else {
+            PollDto response = pollMapper.toDto(pollEntity);
             return ResponseEntity.ok(response);
         }
 
-        return ResponseEntity.notFound().build();
     }
 
     @GetMapping
