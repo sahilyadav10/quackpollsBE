@@ -1,5 +1,6 @@
 package com.sahilten.quackpolls.domain.dto.poll;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sahilten.quackpolls.domain.dto.option.OptionDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -28,6 +29,8 @@ public class CreatePollRequest {
     private boolean isPublic = true;
 
     @Future(message = "Close time must be in the future")
+    @NotNull(message = "Close time is required")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime closesAt;
 
 
