@@ -9,7 +9,6 @@ import com.sahilten.quackpolls.security.user.QuackpollUserDetailsService;
 import com.sahilten.quackpolls.services.AuthenticationService;
 import com.sahilten.quackpolls.services.JwtService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,13 +21,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     // Dependencies injected by Spring via constructor (thanks to @RequiredArgsConstructor)
     private final AuthenticationManager authenticationManager; // Spring's AuthenticationManager
-    //    private final UserDetailsService userDetailsService; // Service that loads user details (used for login)
     private final QuackpollUserDetailsService quackpollUserDetailsService;
     private final UserRepository userRepository; // Repository for accessing user data
     private final PasswordEncoder passwordEncoder; // Encoder to securely hash passwords
     private final JwtService jwtService; // Service responsible for generating and validating JWT tokens
-    @Value("${jwt.expiration}")  // Inject expiration time from application.properties
-    private long jwtExpiration;
 
     @Override
     public void register(RegisterRequest registerRequest) {
@@ -55,19 +51,35 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // Once authentication is successful, load the user details (to generate the token)
         UserDetails userDetails = quackpollUserDetailsService.loadUserByUsername(email);
 
-        // Generate the JWT token for the authenticated user
-        String token = jwtService.generateToken(userDetails);
+        String accessToken = jwtService.generateToken(userDetails, false);
+        String refreshToken = jwtService.generateToken(userDetails, true);
 
-        // Return the AuthResponse with the generated token and its expiration time (e.g., 24 hours)
-        return new AuthResponse(token, jwtExpiration);
+        // Return the AuthResponse with the generated tokens and its expiration time (e.g., 24 hours)
+        return new AuthResponse(accessToken, refreshToken);
     }
 
-    /**
-     * Validates the JWT token and extracts user details based on the token.
-     *
-     * @param token the JWT token sent by the client in the Authorization header
-     * @return the authenticated UserDetails object corresponding to the token's user
-     */
+    @Override
+    public AuthResponse refreshToken(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new RuntimeException("Refresh token is missing.");
+        }
+
+        String email = jwtService.extractUsername(refreshToken);
+
+        UserDetails userDetails = quackpollUserDetailsService.loadUserByUsername(email);
+
+        if (!jwtService.isTokenValid(refreshToken, userDetails)) {
+            throw new RuntimeException("Refresh token is invalid or expired.");
+        }
+
+        // Generate new access and refresh tokens
+        String accessToken = jwtService.generateToken(userDetails, false);
+        String newRefreshToken = jwtService.generateToken(userDetails, true);
+
+        return new AuthResponse(accessToken, newRefreshToken);
+    }
+
+
     @Override
     public UserDetails validateAndExtract(String token) {
         // Extract the username (email) from the JWT token
@@ -78,7 +90,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         // Validate the token
         if (!jwtService.isTokenValid(token, userDetails)) {
-            throw new RuntimeException("The token is invalid or expired.");
+            throw new RuntimeException("The access token is invalid or expired.");
         }
 
         return userDetails;

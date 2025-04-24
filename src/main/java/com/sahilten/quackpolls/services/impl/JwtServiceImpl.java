@@ -16,23 +16,28 @@ import java.util.Date;
 @Service
 public class JwtServiceImpl implements JwtService {
 
-    @Value("${jwt.expiration}")
-    private long jwtExpiration;
+    @Value("${jwt.access-token-expiration}")
+    private long accessTokenExpiration;
+    @Value("${jwt.refresh-token-expiration}")
+    private long refreshTokenExpiration;
     @Value("${jwt.secret}")
     private String secret;
 
     @Override
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, boolean isRefreshToken) {
+        long expiration = isRefreshToken ? refreshTokenExpiration : accessTokenExpiration;
+
         // Create a JWT token with the following data (claims):
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())  // "sub" claim: the username or email of the user
                 .setIssuedAt(new Date())                // "iat" claim: the time when the token was created
                 .setExpiration(new Date(
-                        System.currentTimeMillis() + jwtExpiration)) // "exp" claim: expiration time (e.g., 24 hours)
+                        System.currentTimeMillis() + expiration)) // "exp" claim: expiration time (e.g., 24 hours)
                 .signWith(getSigningKey(),
                         SignatureAlgorithm.HS256)  // Sign the token using the secret key and HS256 algorithm
                 .compact();  // Create and return the token as a string
     }
+
 
     @Override
     public String extractUsername(String token) {

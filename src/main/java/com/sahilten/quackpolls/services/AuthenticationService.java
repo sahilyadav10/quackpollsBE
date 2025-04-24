@@ -9,5 +9,7 @@ public interface AuthenticationService {
 
     AuthResponse authenticate(String email, String password);
 
+    AuthResponse refreshToken(String refreshToken);
+
     UserDetails validateAndExtract(String token);
 }
