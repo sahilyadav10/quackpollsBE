@@ -28,6 +28,12 @@ public class UserEntity {
     @Column(name = "last_name", nullable = false) // Maps to 'last_name' column, not nullable
     private String lastName;
 
+    @Column(name = "age", nullable = false)
+    private int age;
+
+    @Column(name = "gender", nullable = false)
+    private String gender;
+
     @Column(nullable = false, unique = true) // Must be unique and not null
     private String email;
 
