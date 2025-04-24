@@ -12,8 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -44,18 +47,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public AuthResponse authenticate(String email, String password) {
+    public List<Object> authenticate(String email, String password) {
         // Authenticate the user by creating an AuthenticationToken with email and password
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
 
         // Once authentication is successful, load the user details (to generate the token)
         UserDetails userDetails = quackpollUserDetailsService.loadUserByUsername(email);
 
+        UserEntity userEntity = userRepository.findByEmail(email).orElseThrow(
+                () -> new UsernameNotFoundException(
+                        "User not found with email: " + email));
+
         String accessToken = jwtService.generateToken(userDetails, false);
         String refreshToken = jwtService.generateToken(userDetails, true);
 
+
         // Return the AuthResponse with the generated tokens and its expiration time (e.g., 24 hours)
-        return new AuthResponse(accessToken, refreshToken);
+        return List.of(new AuthResponse(accessToken, refreshToken), userEntity);
     }
 
     @Override

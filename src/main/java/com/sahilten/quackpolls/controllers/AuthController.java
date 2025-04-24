@@ -3,6 +3,7 @@ package com.sahilten.quackpolls.controllers;
 import com.sahilten.quackpolls.domain.dto.auth.AuthResponse;
 import com.sahilten.quackpolls.domain.dto.auth.LoginRequest;
 import com.sahilten.quackpolls.domain.dto.auth.RegisterRequest;
+import com.sahilten.quackpolls.domain.entities.UserEntity;
 import com.sahilten.quackpolls.services.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "/v1/auth")
@@ -36,26 +39,36 @@ public class AuthController {
                 .build();
     }
 
-    private ResponseEntity<Void> tokensToResponse(AuthResponse tokens, HttpStatus status) {
+    private ResponseEntity<UserEntity> tokensToResponse(AuthResponse tokens, HttpStatus status, UserEntity user) {
         ResponseCookie access = buildCookie("access_token", tokens.getAccessToken(), accessTokenExpiration);
         ResponseCookie refresh = buildCookie("refresh_token", tokens.getRefreshToken(), refreshTokenExpiration);
         return ResponseEntity.status(status)
                 .header(HttpHeaders.SET_COOKIE, access.toString())
                 .header(HttpHeaders.SET_COOKIE, refresh.toString())
-                .build();
+                .body(user);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<UserEntity> register(@Valid @RequestBody RegisterRequest request) {
         authenticationService.register(request);
-        AuthResponse tokens = authenticationService.authenticate(request.getEmail(), request.getPassword());
-        return tokensToResponse(tokens, HttpStatus.CREATED);
+
+        List<Object> response =
+                authenticationService.authenticate(request.getEmail(),
+                        request.getPassword());
+        AuthResponse tokens = (AuthResponse) response.getFirst();
+        UserEntity userEntity = (UserEntity) response.get(1);
+        return tokensToResponse(tokens, HttpStatus.CREATED, userEntity);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@Valid @RequestBody LoginRequest loginRequest) {
-        AuthResponse tokens = authenticationService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
-        return tokensToResponse(tokens, HttpStatus.OK);
+    public ResponseEntity<UserEntity> login(@Valid @RequestBody LoginRequest request) {
+        List<Object> response =
+                authenticationService.authenticate(request.getEmail(),
+                        request.getPassword());
+        AuthResponse tokens = (AuthResponse) response.getFirst();
+        UserEntity userEntity = (UserEntity) response.get(1);
+
+        return tokensToResponse(tokens, HttpStatus.OK, userEntity);
     }
 
     /**
