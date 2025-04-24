@@ -41,6 +41,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .lastName(registerRequest.getLastName())
                 .email(registerRequest.getEmail())
                 .password(passwordEncoder.encode(registerRequest.getPassword())) // Encode the password before storing
+                .gender(registerRequest.getGender())
+                .age(registerRequest.getAge())
                 .build();
 
         userRepository.save(user);

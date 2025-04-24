@@ -49,22 +49,26 @@ public class UserEntity {
     // Cascade all operations and remove orphans automatically,
     private List<PollEntity> polls;
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        UserEntity that = (UserEntity) o;
-        return Objects.equals(id, that.id) && Objects.equals(firstName, that.firstName) && Objects.equals(lastName,
-                that.lastName) && Objects.equals(email, that.email) && Objects.equals(password,
-                that.password) && Objects.equals(polls, that.polls);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, firstName, lastName, email, password, polls);
-    }
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        UserEntity that = (UserEntity) o;
+        return age == that.age && Objects.equals(id, that.id) && Objects.equals(firstName,
+                that.firstName) && Objects.equals(lastName, that.lastName) && Objects.equals(gender,
+                that.gender) && Objects.equals(email, that.email) && Objects.equals(password,
+                that.password) && Objects.equals(createdAt, that.createdAt) && Objects.equals(polls,
+                that.polls);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, firstName, lastName, age, gender, email, password, createdAt, polls);
     }
 }
