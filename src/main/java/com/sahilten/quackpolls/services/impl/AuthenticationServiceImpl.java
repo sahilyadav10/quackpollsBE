@@ -16,8 +16,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -49,7 +47,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public List<Object> authenticate(String email, String password) {
+    public AuthResponse authenticate(String email, String password) {
         // Authenticate the user by creating an AuthenticationToken with email and password
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
 
@@ -65,7 +63,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
         // Return the AuthResponse with the generated tokens and its expiration time (e.g., 24 hours)
-        return List.of(new AuthResponse(accessToken, refreshToken), userEntity);
+        return new AuthResponse(accessToken, refreshToken);
     }
 
     @Override

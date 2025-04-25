@@ -3,8 +3,6 @@ package com.sahilten.quackpolls.controllers;
 import com.sahilten.quackpolls.domain.dto.auth.AuthResponse;
 import com.sahilten.quackpolls.domain.dto.auth.LoginRequest;
 import com.sahilten.quackpolls.domain.dto.auth.RegisterRequest;
-import com.sahilten.quackpolls.domain.dto.user.UserDto;
-import com.sahilten.quackpolls.domain.entities.UserEntity;
 import com.sahilten.quackpolls.domain.mappers.UserMapper;
 import com.sahilten.quackpolls.services.AuthenticationService;
 import jakarta.validation.Valid;
@@ -16,8 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping(path = "/v1/auth")
@@ -42,40 +38,35 @@ public class AuthController {
                 .build();
     }
 
-    private ResponseEntity<UserDto> tokensToResponse(AuthResponse tokens, HttpStatus status, UserEntity userEntity) {
+    private ResponseEntity<Void> tokensToResponse(AuthResponse tokens, HttpStatus status) {
         ResponseCookie access = buildCookie("access_token", tokens.getAccessToken(), accessTokenExpiration);
         ResponseCookie refresh = buildCookie("refresh_token", tokens.getRefreshToken(), refreshTokenExpiration);
-
-        UserDto userDto = userMapper.toDto(userEntity);
 
         return ResponseEntity.status(status)
                 .header(HttpHeaders.SET_COOKIE, access.toString())
                 .header(HttpHeaders.SET_COOKIE, refresh.toString())
-                .body(userDto);
+                .build();
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
         authenticationService.register(request);
 
-        List<Object> response =
+        AuthResponse tokens =
                 authenticationService.authenticate(request.getEmail(),
                         request.getPassword());
-        AuthResponse tokens = (AuthResponse) response.getFirst();
-        UserEntity userEntity = (UserEntity) response.get(1);
 
-        return tokensToResponse(tokens, HttpStatus.CREATED, userEntity);
+        return tokensToResponse(tokens, HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDto> login(@Valid @RequestBody LoginRequest request) {
-        List<Object> response =
+    public ResponseEntity<Void> login(@Valid @RequestBody LoginRequest request) {
+        AuthResponse tokens =
                 authenticationService.authenticate(request.getEmail(),
                         request.getPassword());
-        AuthResponse tokens = (AuthResponse) response.getFirst();
-        UserEntity userEntity = (UserEntity) response.get(1);
 
-        return tokensToResponse(tokens, HttpStatus.OK, userEntity);
+
+        return tokensToResponse(tokens, HttpStatus.OK);
     }
 
     /**
@@ -83,7 +74,7 @@ public class AuthController {
      * refresh_token cookie. The browser must include the cookie automatically.
      */
     @PostMapping("/refresh")
-    public ResponseEntity<UserDto> refreshAccessToken(
+    public ResponseEntity<Void> refreshAccessToken(
             @CookieValue(name = "refresh_token", required = false) String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -92,6 +83,6 @@ public class AuthController {
         // Authenticate and obtain new tokens
         AuthResponse authResponse = authenticationService.refreshToken(refreshToken);
 
-        return tokensToResponse(authResponse, HttpStatus.OK, null);
+        return tokensToResponse(authResponse, HttpStatus.OK);
     }
 }
