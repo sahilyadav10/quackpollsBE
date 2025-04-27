@@ -2,6 +2,7 @@ package com.sahilten.quackpolls.config;
 
 import com.sahilten.quackpolls.security.jwt.JwtAuthenticationFilter;
 import com.sahilten.quackpolls.services.AuthenticationService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -51,9 +52,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .csrf(csrf -> csrf.disable()).
-                sessionManagement(session ->
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\": \"Authentication required\"}");
+                        })
                 )
                 // Adding the JwtAuthenticationFilter before the default UsernamePasswordAuthenticationFilter.
                 // This ensures JWT authentication is checked before form-based or basic login authentication.

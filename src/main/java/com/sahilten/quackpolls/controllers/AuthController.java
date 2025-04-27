@@ -28,23 +28,24 @@ public class AuthController {
     @Value("${jwt.refresh-token-expiration}")
     private long refreshTokenExpiration;
 
-    private ResponseCookie buildCookie(String name, String value, long maxAge) {
+    private ResponseCookie buildCookie(String name, String value, long maxAge, String path) {
         return ResponseCookie.from(name, value)
                 .httpOnly(true)
                 .secure(true)
-                .path("/")
+                .path(path)
                 .maxAge(maxAge)
                 .sameSite("None")
                 .build();
     }
 
     private ResponseEntity<Void> tokensToResponse(AuthResponse tokens, HttpStatus status) {
-        ResponseCookie access = buildCookie("access_token", tokens.getAccessToken(), accessTokenExpiration);
-        ResponseCookie refresh = buildCookie("refresh_token", tokens.getRefreshToken(), refreshTokenExpiration);
+        ResponseCookie accessToken = buildCookie("access_token", tokens.getAccessToken(), accessTokenExpiration, "/");
+        ResponseCookie refreshToken = buildCookie("refresh_token", tokens.getRefreshToken(), refreshTokenExpiration,
+                "refresh");
 
         return ResponseEntity.status(status)
-                .header(HttpHeaders.SET_COOKIE, access.toString())
-                .header(HttpHeaders.SET_COOKIE, refresh.toString())
+                .header(HttpHeaders.SET_COOKIE, accessToken.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshToken.toString())
                 .build();
     }
 
@@ -64,8 +65,7 @@ public class AuthController {
         AuthResponse tokens =
                 authenticationService.authenticate(request.getEmail(),
                         request.getPassword());
-
-
+        
         return tokensToResponse(tokens, HttpStatus.OK);
     }
 

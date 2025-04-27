@@ -24,35 +24,59 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        String path = request.getRequestURI();
+        
+        // Skip token validation for public auth routes
+        if (path.equals("/v1/auth/login") || path.equals("/v1/auth/register") || path.equals("/v1/auth/refresh")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             String token = extractToken(request);
 
-            if (token != null) {
-                UserDetails userDetails = authenticationService.validateAndExtract(token);
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null,
-                                userDetails.getAuthorities());
+            // If no token found, silently proceed
+            if (token == null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            UserDetails userDetails = authenticationService.validateAndExtract(token);
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(userDetails, null,
+                            userDetails.getAuthorities());
 
-                if (userDetails instanceof QuackpollUserDetails) {
-                    request.setAttribute("userId",
-                            ((QuackpollUserDetails) userDetails).getUserId());
-                }
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            if (userDetails instanceof QuackpollUserDetails) {
+                request.setAttribute("userId",
+                        ((QuackpollUserDetails) userDetails).getUserId());
             }
         } catch (Exception ex) {
-            // DO NOT THROW EXCEPTION, JUST DON'T AUTHENTICATE THE USER
             log.warn("Received invalid auth token");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Invalid or expired access token\"}");
+            return;
         }
 
         filterChain.doFilter(request, response);
     }
 
     private String extractToken(HttpServletRequest request) {
+        String path = request.getRequestURI();
 
+        if (path.equals("/v1/auth/refresh")) {
+            return extractCookie(request, "refresh_token");
+        } else {
+            return extractCookie(request, "access_token");
+        }
+    }
+
+    private String extractCookie(HttpServletRequest request, String name) {
         if (request.getCookies() != null) {
             for (var cookie : request.getCookies()) {
-                if ("access_token".equals(cookie.getName())) {
+                if (name.equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }
