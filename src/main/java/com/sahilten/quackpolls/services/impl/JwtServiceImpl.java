@@ -46,6 +46,11 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
+    public Date extractExpiryFromToken(String token) {
+        return extractClaims(token).getExpiration();
+    }
+
+    @Override
     public boolean isTokenValid(String token, UserDetails userDetails) {
         // Extract the username from the token and check if it matches the provided user details
         final String username = extractUsername(token);

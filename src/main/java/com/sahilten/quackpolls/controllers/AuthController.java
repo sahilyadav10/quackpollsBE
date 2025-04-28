@@ -5,6 +5,7 @@ import com.sahilten.quackpolls.domain.dto.auth.LoginRequest;
 import com.sahilten.quackpolls.domain.dto.auth.RegisterRequest;
 import com.sahilten.quackpolls.domain.mappers.UserMapper;
 import com.sahilten.quackpolls.services.AuthenticationService;
+import com.sahilten.quackpolls.services.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,12 +16,17 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping(path = "/v1/auth")
 @RequiredArgsConstructor
 @Slf4j
 public class AuthController {
     private final AuthenticationService authenticationService;
+    private final JwtService jwtService;
     private final UserMapper userMapper;
     @Value("${jwt.access-token-expiration}")
     private long accessTokenExpiration;
@@ -65,7 +71,7 @@ public class AuthController {
         AuthResponse tokens =
                 authenticationService.authenticate(request.getEmail(),
                         request.getPassword());
-        
+
         return tokensToResponse(tokens, HttpStatus.OK);
     }
 
@@ -74,15 +80,27 @@ public class AuthController {
      * refresh_token cookie. The browser must include the cookie automatically.
      */
     @PostMapping("/refresh")
-    public ResponseEntity<Void> refreshAccessToken(
+    public ResponseEntity<?> refreshAccessToken(
             @CookieValue(name = "refresh_token", required = false) String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // Authenticate and obtain new tokens
         AuthResponse authResponse = authenticationService.refreshToken(refreshToken);
+        String accessToken = authResponse.getAccessToken();
+        Date expiry = jwtService.extractExpiryFromToken(accessToken);
 
-        return tokensToResponse(authResponse, HttpStatus.OK);
+        ResponseCookie accessTokenCookie =
+                buildCookie("access_token", authResponse.getAccessToken(), accessTokenExpiration, "/");
+        ResponseCookie refreshTokenCookie =
+                buildCookie("refresh_token", authResponse.getRefreshToken(), refreshTokenExpiration, "/refresh");
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("accessTokenExpiresAt", expiry.getTime());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .body(body);
     }
 }
