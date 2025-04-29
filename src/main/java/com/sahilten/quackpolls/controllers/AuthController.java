@@ -1,5 +1,6 @@
 package com.sahilten.quackpolls.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sahilten.quackpolls.domain.dto.auth.AuthResponse;
 import com.sahilten.quackpolls.domain.dto.auth.LoginRequest;
 import com.sahilten.quackpolls.domain.dto.auth.RegisterRequest;
@@ -28,6 +29,7 @@ public class AuthController {
     private final AuthenticationService authenticationService;
     private final JwtService jwtService;
     private final UserMapper userMapper;
+    private final ObjectMapper objectMapper;
     @Value("${jwt.access-token-expiration}")
     private long accessTokenExpiration;
 
@@ -46,8 +48,8 @@ public class AuthController {
 
     private ResponseEntity<Void> tokensToResponse(AuthResponse tokens, HttpStatus status) {
         ResponseCookie accessToken = buildCookie("access_token", tokens.getAccessToken(), accessTokenExpiration, "/");
-        ResponseCookie refreshToken = buildCookie("refresh_token", tokens.getRefreshToken(), refreshTokenExpiration,
-                "refresh");
+        ResponseCookie refreshToken =
+                buildCookie("refresh_token", tokens.getRefreshToken(), refreshTokenExpiration, "/v1/auth/refresh");
 
         return ResponseEntity.status(status)
                 .header(HttpHeaders.SET_COOKIE, accessToken.toString())
@@ -93,8 +95,8 @@ public class AuthController {
         ResponseCookie accessTokenCookie =
                 buildCookie("access_token", authResponse.getAccessToken(), accessTokenExpiration, "/");
         ResponseCookie refreshTokenCookie =
-                buildCookie("refresh_token", authResponse.getRefreshToken(), refreshTokenExpiration, "/refresh");
-
+                buildCookie("refresh_token", authResponse.getRefreshToken(), refreshTokenExpiration,
+                        "/v1/auth/refresh");
         Map<String, Object> body = new HashMap<>();
         body.put("accessTokenExpiresAt", expiry.getTime());
 
