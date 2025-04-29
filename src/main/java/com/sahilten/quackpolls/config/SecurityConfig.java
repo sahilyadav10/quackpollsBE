@@ -85,6 +85,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
+                "https://www.quackpolls.sahilten.com",
                 "https://quackpolls.sahilten.com"
         ));
         config.setAllowedMethods(List.of("*"));
